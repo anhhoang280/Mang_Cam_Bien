@@ -1,0 +1,421 @@
+# ESP32 Đọc Nhiệt Độ Và Độ Ẩm Từ DHT11
+
+## Mục đích
+
+Chương trình sử dụng ESP32 để đọc dữ liệu từ cảm biến DHT11 thông qua chân GPIO4 và hiển thị nhiệt độ, độ ẩm trên Serial Monitor.
+
+---
+
+# Mã nguồn
+
+```cpp
+#include <DHT.h>
+
+#define DHTPIN 4
+#define DHTTYPE DHT11
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(115200);
+  dht.begin();
+
+  Serial.println("Khoi dong DHT11...");
+}
+
+void loop() {
+  float humidity = dht.readHumidity();
+  float temperature = dht.readTemperature();
+
+  if (isnan(humidity) || isnan(temperature)) {
+    Serial.println("Doc DHT11 that bai!");
+  } else {
+    Serial.print("Nhiet do: ");
+    Serial.print(temperature, 1);
+    Serial.print(" *C");
+
+    Serial.print(" | Do am: ");
+    Serial.print(humidity, 1);
+    Serial.println(" %");
+  }
+
+  delay(2000);
+}
+```
+
+---
+
+# Giải thích chi tiết chương trình
+
+## 1. Khai báo thư viện
+
+```cpp
+#include <DHT.h>
+```
+
+Thư viện DHT hỗ trợ giao tiếp với cảm biến DHT11 và DHT22.
+
+Thư viện cung cấp các hàm:
+
+* `dht.begin()` : Khởi tạo cảm biến.
+* `dht.readTemperature()` : Đọc nhiệt độ.
+* `dht.readHumidity()` : Đọc độ ẩm.
+
+---
+
+## 2. Khai báo chân kết nối
+
+```cpp
+#define DHTPIN 4
+```
+
+Xác định chân DATA của DHT11 được kết nối với GPIO4 của ESP32.
+
+Sử dụng hằng số giúp dễ thay đổi khi chuyển sang chân khác.
+
+Ví dụ:
+
+```cpp
+#define DHTPIN 15
+```
+
+sẽ sử dụng GPIO15 thay cho GPIO4.
+
+---
+
+## 3. Khai báo loại cảm biến
+
+```cpp
+#define DHTTYPE DHT11
+```
+
+Cho thư viện biết loại cảm biến đang sử dụng là DHT11.
+
+Nếu dùng DHT22:
+
+```cpp
+#define DHTTYPE DHT22
+```
+
+---
+
+## 4. Tạo đối tượng DHT
+
+```cpp
+DHT dht(DHTPIN, DHTTYPE);
+```
+
+Tạo đối tượng tên `dht`.
+
+Đối tượng này chứa toàn bộ các hàm giao tiếp với cảm biến.
+
+Thông tin được truyền vào:
+
+* Chân kết nối: GPIO4
+* Loại cảm biến: DHT11
+
+---
+
+# Hàm setup()
+
+```cpp
+void setup() {
+```
+
+Hàm này chỉ chạy một lần khi ESP32 khởi động.
+
+---
+
+## 5. Khởi tạo Serial Monitor
+
+```cpp
+Serial.begin(115200);
+```
+
+Mở cổng Serial với tốc độ truyền dữ liệu:
+
+```text
+115200 bit/s
+```
+
+Cho phép hiển thị dữ liệu lên Serial Monitor.
+
+---
+
+## 6. Khởi tạo cảm biến DHT11
+
+```cpp
+dht.begin();
+```
+
+Cấu hình GPIO4 để giao tiếp với DHT11.
+
+Nếu bỏ dòng này, ESP32 sẽ không thể đọc dữ liệu từ cảm biến.
+
+---
+
+## 7. Hiển thị thông báo khởi động
+
+```cpp
+Serial.println("Khoi dong DHT11...");
+```
+
+Kết quả:
+
+```text
+Khoi dong DHT11...
+```
+
+Giúp người dùng biết chương trình đã bắt đầu chạy.
+
+---
+
+# Hàm loop()
+
+```cpp
+void loop() {
+```
+
+Hàm này chạy lặp vô hạn.
+
+Chu trình:
+
+```text
+Đọc dữ liệu
+     ↓
+Hiển thị dữ liệu
+     ↓
+Chờ 2 giây
+     ↓
+Đọc lại
+```
+
+---
+
+## 8. Đọc độ ẩm
+
+```cpp
+float humidity = dht.readHumidity();
+```
+
+Đọc giá trị độ ẩm từ DHT11.
+
+Ví dụ:
+
+```text
+74.5 %
+```
+
+Giá trị được lưu vào biến:
+
+```cpp
+humidity
+```
+
+Kiểu dữ liệu:
+
+```cpp
+float
+```
+
+vì có phần thập phân.
+
+---
+
+## 9. Đọc nhiệt độ
+
+```cpp
+float temperature = dht.readTemperature();
+```
+
+Đọc nhiệt độ theo đơn vị độ C.
+
+Ví dụ:
+
+```text
+29.8 °C
+```
+
+Giá trị được lưu vào biến:
+
+```cpp
+temperature
+```
+
+---
+
+## 10. Kiểm tra lỗi đọc dữ liệu
+
+```cpp
+if (isnan(humidity) || isnan(temperature))
+```
+
+### Hàm isnan()
+
+`isnan()` là viết tắt của:
+
+```text
+Is Not A Number
+```
+
+Nếu cảm biến trả về giá trị lỗi:
+
+```text
+NaN
+```
+
+thì điều kiện sẽ đúng.
+
+Ví dụ:
+
+```cpp
+humidity = NaN
+temperature = 28.5
+```
+
+Khi đó chương trình hiểu rằng việc đọc dữ liệu thất bại.
+
+---
+
+## 11. Hiển thị lỗi
+
+```cpp
+Serial.println("Doc DHT11 that bai!");
+```
+
+Kết quả:
+
+```text
+Doc DHT11 that bai!
+```
+
+Nguyên nhân thường gặp:
+
+* Nối sai dây.
+* Cảm biến hỏng.
+* Thiếu điện trở kéo lên.
+* Nguồn cấp không ổn định.
+
+---
+
+## 12. Hiển thị nhiệt độ
+
+```cpp
+Serial.print("Nhiet do: ");
+Serial.print(temperature, 1);
+```
+
+Tham số:
+
+```cpp
+temperature, 1
+```
+
+nghĩa là hiển thị 1 chữ số sau dấu thập phân.
+
+Ví dụ:
+
+```cpp
+29.876
+```
+
+sẽ được hiển thị:
+
+```text
+29.9
+```
+
+---
+
+## 13. Hiển thị đơn vị nhiệt độ
+
+```cpp
+Serial.print(" *C");
+```
+
+Kết quả:
+
+```text
+29.9 *C
+```
+
+---
+
+## 14. Hiển thị độ ẩm
+
+```cpp
+Serial.print(" | Do am: ");
+Serial.print(humidity, 1);
+Serial.println(" %");
+```
+
+Ví dụ:
+
+```text
+74.5 %
+```
+
+---
+
+# Ví dụ kết quả
+
+```text
+Khoi dong DHT11...
+
+Nhiet do: 29.8 *C | Do am: 74.5 %
+Nhiet do: 29.9 *C | Do am: 74.3 %
+Nhiet do: 30.0 *C | Do am: 74.1 %
+```
+
+---
+
+## 15. Tạm dừng chương trình
+
+```cpp
+delay(2000);
+```
+
+ESP32 tạm dừng:
+
+```text
+2000 ms = 2 giây
+```
+
+sau đó quay lại đầu hàm `loop()` để đọc dữ liệu mới.
+
+---
+
+# Lưu đồ hoạt động
+
+```text
+Khởi động ESP32
+        │
+        ▼
+Khởi tạo Serial
+        │
+        ▼
+Khởi tạo DHT11
+        │
+        ▼
+Đọc nhiệt độ và độ ẩm
+        │
+        ▼
+Kiểm tra lỗi đọc?
+   ┌────┴────┐
+   │         │
+  Có       Không
+   │         │
+   ▼         ▼
+Báo lỗi   Hiển thị dữ liệu
+   │         │
+   └────┬────┘
+        ▼
+     Delay 2s
+        │
+        ▼
+     Lặp lại
+```
+
+# Kết luận
+
+Chương trình sử dụng ESP32 để đọc nhiệt độ và độ ẩm từ cảm biến DHT11 qua GPIO4. Dữ liệu được xử lý, kiểm tra lỗi và hiển thị trên Serial Monitor sau mỗi 2 giây.
